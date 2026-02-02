@@ -19,10 +19,10 @@ public class ManagerTest {
         assertEquals(1,removed);
         assertEquals(1,m.getStudentListSize());
 
-        boolean hasB = m.getStudentList().stream().anyMatch(s -> s.getName().equals("B"));
+        boolean hasB = m.getAllStudents().stream().anyMatch(s -> s.getName().equals("B"));
         assertTrue(hasB);
 
-        boolean allAbove = m.getStudentList().stream().allMatch(student -> student.getScore() >= 60);
+        boolean allAbove = m.getAllStudents().stream().allMatch(student -> student.getScore() >= 60);
         assertTrue(allAbove);
     }
 }
