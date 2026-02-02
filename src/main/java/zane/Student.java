@@ -3,6 +3,8 @@ package zane;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.Locale;
+
 @Getter
 @ToString
 public class Student {
@@ -15,11 +17,9 @@ public class Student {
     }
 
     public void setScore(int score) {
-        if (score >= 0 && score <= 100) {
-            this.score = score;
-        } else {
-            System.out.println("Invalid score. Score must be between 0 and 100.");
+        if (score < 0 || score > 100){
+            throw new IllegalArgumentException("Score must be between 0 and 100");
         }
+    this.score = score;
     }
-
 }
