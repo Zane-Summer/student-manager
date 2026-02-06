@@ -12,8 +12,11 @@ public class Student {
     private int score;
 
     public Student(String name, int score) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Student name cannot be blank");
+        }
         this.name = name;
-        this.score = score;
+        setScore(score);
     }
 
     public void setScore(int score) {

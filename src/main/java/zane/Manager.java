@@ -8,7 +8,7 @@ public class Manager {
 
     // add student
     public void addStudent(String name, int score){
-        if (name == null || name.isEmpty()){
+        if (name == null || name.trim().isEmpty()){
             throw new IllegalArgumentException("Student name cannot be empty");
         }
         if (score < 0 || score > 100){
@@ -52,6 +52,20 @@ public class Manager {
             if (s.getScore() < threshold) res.add(s);
         }
         return res;
+    }
+
+    // update student score
+    public boolean updateScoreByName(String name, int newScore){
+        if (name == null || name.isBlank()){
+            throw new IllegalArgumentException("Student name cannot be blank");
+        }
+        for (Student s : studentList){
+            if (s.getName().equals(name)){
+                s.setScore(newScore);
+                return true;
+            }
+        }
+        return false;
     }
 
 }
