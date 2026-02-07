@@ -8,12 +8,6 @@ public class Manager {
 
     // add student
     public void addStudent(String name, int score){
-        if (name == null || name.trim().isEmpty()){
-            throw new IllegalArgumentException("Student name cannot be empty");
-        }
-        if (score < 0 || score > 100){
-            throw new IllegalArgumentException("Score must be between 0 and 100");
-        }
         studentList.add(new Student(name, score));
     }
 
