@@ -5,6 +5,12 @@ public class Main {
         Manager manager = new Manager();
 
         manager.addStudent("Alice", 85);
+        Student alice = manager.addStudent("Alice", 85);
+        System.out.println("\nFind by ID:");
+        manager.findById(alice.getId())
+                .ifPresent(s -> System.out.println(s.getName() + " found"));
+
+
         manager.addStudent("Bob", 92);
         manager.addStudent("Charlie", 78);
         manager.addStudent("D", 48);

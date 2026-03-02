@@ -8,13 +8,18 @@ import java.util.Locale;
 @Getter
 @ToString
 public class Student {
-    private final String name;
+    private final String id;
+    private String name;
     private int score;
 
-    public Student(String name, int score) {
+    public Student(String id, String name, int score) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("Student ID cannot be blank");
+        }
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Student name cannot be blank");
         }
+        this.id = id;
         this.name = name;
         setScore(score);
     }
