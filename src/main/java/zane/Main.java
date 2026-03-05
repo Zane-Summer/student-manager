@@ -1,39 +1,34 @@
 package zane;
 
+import zane.repository.JsonFileStudentRepository;
+import zane.repository.StudentRepository;
+
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) {
-        Manager manager = new Manager();
+        StudentRepository repository = new JsonFileStudentRepository();
+        StudentService service = new StudentService(repository);
 
-        manager.addStudent("Alice", 85);
-        Student alice = manager.addStudent("Alice", 85);
-        System.out.println("\nFind by ID:");
-        manager.findById(alice.getId())
-                .ifPresent(s -> System.out.println(s.getName() + " found"));
+        service.addStudent("Alice", 90);
+        service.addStudent("Bob", 75);
+        service.addStudent("Charlie", 60);
 
-
-        manager.addStudent("Bob", 92);
-        manager.addStudent("Charlie", 78);
-        manager.addStudent("D", 48);
-        manager.addStudent("E", 58);
-
+        List<Student> all = service.getAllStudents();
         System.out.println("All students:");
-        for (Student s : manager.getAllStudents()){
-            System.out.println(s.getName() + " - " + s.getScore());
+        for (Student s : all) {
+            System.out.println(s.getId() + " - " + s.getName() + " - " + s.getScore());
         }
 
-        int threshold = 60;
+        int removed = service.removeStudentsBelowScore(70);
+        System.out.println("Removed students below 70: " + removed);
 
-        System.out.println("\nStudents below score " + threshold + ":");
-        for (Student s : manager.getStudentsBelowScore(threshold)){
-            System.out.println(s.getName() + " - " + s.getScore());
+        all = service.getAllStudents();
+        System.out.println("After removal:");
+        for (Student s : all) {
+            System.out.println(s.getId() + " - " + s.getName() + " - " + s.getScore());
         }
 
-        int removedCount = manager.removeStudentsBelowScore(threshold);
-        System.out.println("\nRemoved count (< " + threshold + "): " + removedCount);
-
-        System.out.println("\nAfter removal:");
-        for (Student s : manager.getAllStudents()){
-            System.out.println(s.getName() + " - " + s.getScore());
-        }
+        System.out.println("Check Students.json in project root folder.");
     }
 }
