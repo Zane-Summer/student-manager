@@ -1,90 +1,92 @@
 package zane;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import zane.repository.InMemoryStudentRepository;
 
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StudentServiceTest {
+    private StudentService service;
+    @BeforeEach
+    void setUp() {
+        service = new StudentService(new InMemoryStudentRepository());
+    }
+    
     @Test
     void addStudentTest() {
-        StudentService m = new StudentService();
-        m.addStudent("Alice", 90);
-        assertEquals(1, m.getStudentCount());
+        service.addStudent("Alice", 90);
+        assertEquals(1, service.getStudentCount());
     }
+
     @Test
     void removeStudentTest() {
-        StudentService m = new StudentService();
-        m.addStudent("A", 50);
-        m.addStudent("B", 70);
-        int removed = m.removeStudentsBelowScore(60);
+        service.addStudent("A", 50);
+        service.addStudent("B", 70);
+        int removed = service.removeStudentsBelowScore(60);
         assertEquals(1,removed);
-        assertEquals(1,m.getStudentCount());
-
-        boolean hasB = m.getAllStudents().stream().anyMatch(s -> s.getName().equals("B"));
+        assertEquals(1,service.getStudentCount());
+        boolean hasB = service.getAllStudents().stream().anyMatch(s -> s.getName().equals("B"));
         assertTrue(hasB);
-
-        boolean allAbove = m.getAllStudents().stream().allMatch(student -> student.getScore() >= 60);
+        boolean allAbove = service.getAllStudents().stream().allMatch(student -> student.getScore() >= 60);
         assertTrue(allAbove);
     }
+
     @Test
     void addStudent_shouldThrow_whenNameIsNull(){
-        StudentService m = new StudentService();
-        assertThrows(IllegalArgumentException.class, () -> m.addStudent(null,90));
+        assertThrows(IllegalArgumentException.class, () -> service.addStudent(null,90));
     }
+
     @Test
     void addStudent_shouldThrow_whenNameIsBlank(){
-        StudentService m = new StudentService();
-        assertThrows(IllegalArgumentException.class, () -> m.addStudent("   ",90));
+        assertThrows(IllegalArgumentException.class, () -> service.addStudent("   ",90));
     }
+
     @Test
     void addStudent_shouldThrow_whenScoreTooLow(){
-        StudentService m = new StudentService();
-        assertThrows(IllegalArgumentException.class, () -> m.addStudent("Alice",-1));
+        assertThrows(IllegalArgumentException.class, () -> service.addStudent("Alice",-1));
     }
+
     @Test
     void addStudent_shouldThrow_whenScoreTooHigh(){
-        StudentService m = new StudentService();
-        assertThrows(IllegalArgumentException.class, () -> m.addStudent("Alice",101));
+        assertThrows(IllegalArgumentException.class, () -> service.addStudent("Alice",101));
     }
+
     @Test
     void updateScoreById_shouldUpdate_whenStudentExists(){
-        StudentService m = new StudentService();
-        Student s = m.addStudent("Alice", 90);
-        boolean updated = m.updateScoreById(s.getId(), 100);
+        Student s = service.addStudent("Alice", 90);
+        boolean updated = service.updateScoreById(s.getId(), 100);
         assertTrue(updated);
-        int score = m.findById(s.getId())
+        int score = service.findById(s.getId())
                 .orElseThrow()
                 .getScore();
         assertEquals(100, score);
     }
+
     @Test
     void updateScoreById_shouldReturnFalse_whenStudentNotExists(){
-        StudentService m = new StudentService();
-        boolean updated = m.updateScoreById("S999", 100);
+        boolean updated = service.updateScoreById("S999", 100);
         assertFalse(updated);
     }
 
     @Test
     void findById_shouldReturnStudent_whenExists(){
-        StudentService m = new StudentService();
-        Student s = m.addStudent("Alice", 90);
-        assertTrue(m.findById(s.getId()).isPresent());
+        Student s = service.addStudent("Alice", 90);
+        assertTrue(service.findById(s.getId()).isPresent());
     }
 
     @Test
     void findById_shouldReturnEmpty_whenNotFound(){
-        StudentService m = new StudentService();
-        assertTrue(m.findById("S999").isEmpty());
+        assertTrue(service.findById("S999").isEmpty());
     }
 
     @Test
     void updateScoreByIdOrThrow_shouldUpdate_whenStudentExists() {
-        StudentService m = new StudentService();
-        Student alice = m.addStudent("Alice", 90);
-        m.updateScoreByIdOrThrow(alice.getId(), 100);
-        int score = m.findById(alice.getId())
+        Student alice = service.addStudent("Alice", 90);
+        service.updateScoreByIdOrThrow(alice.getId(), 100);
+        int score = service.findById(alice.getId())
                 .orElseThrow()
                 .getScore();
         assertEquals(100, score);
@@ -92,7 +94,6 @@ public class StudentServiceTest {
 
     @Test
     void updateScoreByIdOrThrow_shouldThrow_whenStudentNotExists() {
-        StudentService m = new StudentService();
-        assertThrows(NoSuchElementException.class, () -> m.updateScoreByIdOrThrow("S999", 100));
+        assertThrows(NoSuchElementException.class, () -> service.updateScoreByIdOrThrow("S999", 100));
     }
 }
