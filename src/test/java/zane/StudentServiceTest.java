@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import zane.repository.InMemoryStudentRepository;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,4 +97,40 @@ public class StudentServiceTest {
     void updateScoreByIdOrThrow_shouldThrow_whenStudentNotExists() {
         assertThrows(NoSuchElementException.class, () -> service.updateScoreByIdOrThrow("S999", 100));
     }
+
+    @Test
+    void getStudentsBelowScore_shouldReturnFilteredList() {
+        service.addStudent("Alice", 90);
+        service.addStudent("Bob", 70);
+        service.addStudent("Charlie", 60);
+
+        List<Student> lowScorers = service.getStudentsBelowScore(60);
+        assertEquals(1, lowScorers.size());
+        assertEquals("Charlie", lowScorers.get(0).getName());
+    }
+
+    @Test
+    void getStudentViews_shouldReturnCorrectMapping() {
+        service.addStudent("Alice", 90);
+        service.addStudent("Bob", 70);
+
+        List<StudentView> views = service.getAllStudentViews();
+        assertEquals(2, views.size());
+        assertEquals("Alice", views.get(0).name());
+        assertEquals(90, views.get(0).score());
+        assertEquals("Bob", views.get(1).name());
+        assertEquals(70, views.get(1).score());
+    }
+
+    @Test
+    void getStudentViewList_shouldReturnCorrectFormat() {
+        service.addStudent("Alice", 90);
+        service.addStudent("Bob", 70);
+
+        List<String> viewList = service.getStudentViewList();
+        assertEquals(2, viewList.size());
+        assertEquals("Alice - 90", viewList.get(0));
+        assertEquals("Bob - 70", viewList.get(1));
+    }
+
 }

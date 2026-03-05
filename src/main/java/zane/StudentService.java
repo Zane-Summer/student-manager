@@ -1,24 +1,30 @@
 package zane;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 import zane.repository.StudentRepository;
 
+@Slf4j
 public class StudentService {
     private final StudentRepository repository;
-    private int idCounter = 1;
+    private final AtomicInteger idCounter = new AtomicInteger(1);
 
     public StudentService(StudentRepository repository) {
         this.repository = repository;
     }
 
     private String generateId() {
-        return String.format("S%03d", idCounter++);
+        return String.format("S%03d", idCounter.getAndIncrement());
     }
 
 
     // add student
     public Student addStudent(String name, int score){
+        log.info("Adding student with name {} and score {}", name, score);
+
         String id = generateId();
         Student s = new Student(id, name, score);
         repository.save(s);

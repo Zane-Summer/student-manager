@@ -2,12 +2,14 @@ package zane.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import zane.Student;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
+@Slf4j
 public class JsonFileStudentRepository implements StudentRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -20,19 +22,21 @@ public class JsonFileStudentRepository implements StudentRepository {
             try {
                 Files.createFile(filePath);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to create data file", e);
+                log.error("Failed to create students.json", e);
+                throw new RuntimeException("Failed to create students.json", e);
             }
         } else {
             try {
                 List<Student> students = objectMapper.readValue(
                         Files.readAllBytes(filePath),
-                        new TypeReference<List<Student>>() {
+                        new TypeReference<>() {
                         }
                 );
                 for (Student s : students) {
                     studentMap.put(s.getId(), s);
                 }
             } catch (IOException e) {
+                log.error("Failed to read students.json", e);
                 throw new RuntimeException("Failed to read students.json", e);
             }
         }
@@ -65,6 +69,7 @@ public class JsonFileStudentRepository implements StudentRepository {
             objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValue(filePath.toFile(), new ArrayList<>(studentMap.values()));
         } catch (IOException e) {
+            log.error("Failed to write to students.json", e);
             throw new RuntimeException("Failed to write to students.json", e);
         }
     }

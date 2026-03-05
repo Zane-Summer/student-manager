@@ -2,9 +2,10 @@ package zane.repository;
 
 import zane.Student;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryStudentRepository implements StudentRepository {
-    private Map<String, Student> studentMap = new HashMap<>();
+    private final Map<String, Student> studentMap = new ConcurrentHashMap<>();
 
     @Override
     public void save(Student s){

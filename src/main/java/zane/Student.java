@@ -3,13 +3,11 @@ package zane;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.Locale;
-
 @Getter
 @ToString
 public class Student {
     private final String id;
-    private String name;
+    private final String name;
     private int score;
 
     public Student(String id, String name, int score) {
