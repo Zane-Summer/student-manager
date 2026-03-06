@@ -1,0 +1,9 @@
+[ {
+  "id" : "S001",
+  "name" : "Alice",
+  "score" : 90
+}, {
+  "id" : "S002",
+  "name" : "Bob",
+  "score" : 75
+} ]

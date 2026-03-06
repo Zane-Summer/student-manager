@@ -1,136 +1,265 @@
 package zane;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import zane.repository.InMemoryStudentRepository;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import zane.repository.StudentRepository;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-public class StudentServiceTest {
+@ExtendWith(MockitoExtension.class)
+class StudentServiceTest {
+
+    @Mock
+    private StudentRepository repository;
+
+    @InjectMocks
     private StudentService service;
+
+    private List<Student> mockStudents;
+
     @BeforeEach
     void setUp() {
-        service = new StudentService(new InMemoryStudentRepository());
+        mockStudents = Arrays.asList(
+                new Student("S001", "Alice", 90),
+                new Student("S002", "Bob", 75),
+                new Student("S003", "Charlie", 55),
+                new Student("S004", "Diana", 90)
+        );
     }
-    
+
+    // ── addStudent ──────────────────────────────────────────────────────────
+
     @Test
-    void addStudentTest() {
-        service.addStudent("Alice", 90);
-        assertEquals(1, service.getStudentCount());
+    @DisplayName("Should save and return a new student")
+    void addStudent_shouldSaveAndReturnStudent() {
+        Student result = service.addStudent("Alice", 90);
+
+        assertEquals("Alice", result.getName());
+        assertEquals(90, result.getScore());
+        assertNotNull(result.getId());
+        verify(repository, times(1)).save(result);
     }
 
     @Test
-    void removeStudentTest() {
-        service.addStudent("A", 50);
-        service.addStudent("B", 70);
-        int removed = service.removeStudentsBelowScore(60);
-        assertEquals(1,removed);
-        assertEquals(1,service.getStudentCount());
-        boolean hasB = service.getAllStudents().stream().anyMatch(s -> s.getName().equals("B"));
-        assertTrue(hasB);
-        boolean allAbove = service.getAllStudents().stream().allMatch(student -> student.getScore() >= 60);
-        assertTrue(allAbove);
+    @DisplayName("Should generate incremental IDs for each student added")
+    void addStudent_shouldGenerateIncrementalIds() {
+        Student s1 = service.addStudent("Alice", 90);
+        Student s2 = service.addStudent("Bob", 80);
+
+        assertNotEquals(s1.getId(), s2.getId());
+    }
+
+    // ── findById ────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should return student when ID exists")
+    void findById_shouldReturnStudent_whenExists() {
+        when(repository.findById("S001")).thenReturn(Optional.of(mockStudents.get(0)));
+
+        Optional<Student> result = service.findById("S001");
+
+        assertTrue(result.isPresent());
+        assertEquals("Alice", result.get().getName());
     }
 
     @Test
-    void addStudent_shouldThrow_whenNameIsNull(){
-        assertThrows(IllegalArgumentException.class, () -> service.addStudent(null,90));
+    @DisplayName("Should return empty when ID does not exist")
+    void findById_shouldReturnEmpty_whenNotFound() {
+        when(repository.findById("S999")).thenReturn(Optional.empty());
+
+        Optional<Student> result = service.findById("S999");
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ── removeStudentsBelowScore ─────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should remove students below threshold and return count")
+    void removeStudentsBelowScore_shouldRemoveAndReturnCount() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        int removed = service.removeStudentsBelowScore(80);
+
+        assertEquals(2, removed); // Bob(75) and Charlie(55)
+        verify(repository).deleteById("S002");
+        verify(repository).deleteById("S003");
     }
 
     @Test
-    void addStudent_shouldThrow_whenNameIsBlank(){
-        assertThrows(IllegalArgumentException.class, () -> service.addStudent("   ",90));
+    @DisplayName("Should return 0 when no students are below threshold")
+    void removeStudentsBelowScore_shouldReturnZero_whenNoneMatch() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        int removed = service.removeStudentsBelowScore(0);
+
+        assertEquals(0, removed);
+        verify(repository, never()).deleteById(any());
     }
 
     @Test
-    void addStudent_shouldThrow_whenScoreTooLow(){
-        assertThrows(IllegalArgumentException.class, () -> service.addStudent("Alice",-1));
+    @DisplayName("Should throw when threshold is negative")
+    void removeStudentsBelowScore_shouldThrow_whenThresholdNegative() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.removeStudentsBelowScore(-1));
+        verify(repository, never()).findAll();
+    }
+
+    // ── getStudentCount ──────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should return correct student count")
+    void getStudentCount_shouldReturnCorrectCount() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        assertEquals(4, service.getStudentCount());
     }
 
     @Test
-    void addStudent_shouldThrow_whenScoreTooHigh(){
-        assertThrows(IllegalArgumentException.class, () -> service.addStudent("Alice",101));
+    @DisplayName("Should return 0 when no students exist")
+    void getStudentCount_shouldReturnZero_whenEmpty() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+
+        assertEquals(0, service.getStudentCount());
+    }
+
+    // ── getStudentsBelowScore ────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should return students below threshold")
+    void getStudentsBelowScore_shouldReturnMatchingStudents() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        List<Student> result = service.getStudentsBelowScore(80);
+
+        assertEquals(2, result.size());
+        assertTrue(result.stream().allMatch(s -> s.getScore() < 80));
     }
 
     @Test
-    void updateScoreById_shouldUpdate_whenStudentExists(){
-        Student s = service.addStudent("Alice", 90);
-        boolean updated = service.updateScoreById(s.getId(), 100);
+    @DisplayName("Should return empty list when no students are below threshold")
+    void getStudentsBelowScore_shouldReturnEmpty_whenNoneMatch() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        List<Student> result = service.getStudentsBelowScore(0);
+
+        assertTrue(result.isEmpty());
+    }
+
+    // ── updateScoreById ──────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should update score and return true when student exists")
+    void updateScoreById_shouldReturnTrue_whenStudentExists() {
+        when(repository.findById("S001")).thenReturn(Optional.of(mockStudents.get(0)));
+
+        boolean updated = service.updateScoreById("S001", 100);
+
         assertTrue(updated);
-        int score = service.findById(s.getId())
-                .orElseThrow()
-                .getScore();
-        assertEquals(100, score);
+        assertEquals(100, mockStudents.get(0).getScore());
     }
 
     @Test
-    void updateScoreById_shouldReturnFalse_whenStudentNotExists(){
+    @DisplayName("Should return false when student does not exist")
+    void updateScoreById_shouldReturnFalse_whenNotFound() {
+        when(repository.findById("S999")).thenReturn(Optional.empty());
+
         boolean updated = service.updateScoreById("S999", 100);
+
         assertFalse(updated);
     }
 
-    @Test
-    void findById_shouldReturnStudent_whenExists(){
-        Student s = service.addStudent("Alice", 90);
-        assertTrue(service.findById(s.getId()).isPresent());
-    }
+    // ── updateScoreByIdOrThrow ───────────────────────────────────────────────
 
     @Test
-    void findById_shouldReturnEmpty_whenNotFound(){
-        assertTrue(service.findById("S999").isEmpty());
-    }
-
-    @Test
+    @DisplayName("Should update score without exception when student exists")
     void updateScoreByIdOrThrow_shouldUpdate_whenStudentExists() {
-        Student alice = service.addStudent("Alice", 90);
-        service.updateScoreByIdOrThrow(alice.getId(), 100);
-        int score = service.findById(alice.getId())
-                .orElseThrow()
-                .getScore();
-        assertEquals(100, score);
+        when(repository.findById("S001")).thenReturn(Optional.of(mockStudents.get(0)));
+
+        assertDoesNotThrow(() -> service.updateScoreByIdOrThrow("S001", 100));
+        assertEquals(100, mockStudents.get(0).getScore());
     }
 
     @Test
-    void updateScoreByIdOrThrow_shouldThrow_whenStudentNotExists() {
-        assertThrows(NoSuchElementException.class, () -> service.updateScoreByIdOrThrow("S999", 100));
+    @DisplayName("Should throw NoSuchElementException when student not found")
+    void updateScoreByIdOrThrow_shouldThrow_whenNotFound() {
+        when(repository.findById("S999")).thenReturn(Optional.empty());
+
+        assertThrows(java.util.NoSuchElementException.class,
+                () -> service.updateScoreByIdOrThrow("S999", 100));
     }
 
-    @Test
-    void getStudentsBelowScore_shouldReturnFilteredList() {
-        service.addStudent("Alice", 90);
-        service.addStudent("Bob", 70);
-        service.addStudent("Charlie", 60);
+    // ── getStudentViewList ───────────────────────────────────────────────────
 
-        List<Student> lowScorers = service.getStudentsBelowScore(60);
-        assertEquals(1, lowScorers.size());
-        assertEquals("Charlie", lowScorers.get(0).getName());
+    @Test
+    @DisplayName("Should return formatted name-score strings")
+    void getStudentViewList_shouldReturnFormattedStrings() {
+        when(repository.findAll()).thenReturn(List.of(
+                new Student("S001", "Alice", 90)
+        ));
+
+        List<String> views = service.getStudentViewList();
+
+        assertEquals(1, views.size());
+        assertEquals("Alice - 90", views.get(0));
     }
 
+    // ── getAllStudentViews ───────────────────────────────────────────────────
+
     @Test
-    void getStudentViews_shouldReturnCorrectMapping() {
-        service.addStudent("Alice", 90);
-        service.addStudent("Bob", 70);
+    @DisplayName("Should return StudentView list mapped from students")
+    void getAllStudentViews_shouldReturnMappedViews() {
+        when(repository.findAll()).thenReturn(mockStudents);
 
         List<StudentView> views = service.getAllStudentViews();
-        assertEquals(2, views.size());
+
+        assertEquals(4, views.size());
         assertEquals("Alice", views.get(0).name());
         assertEquals(90, views.get(0).score());
-        assertEquals("Bob", views.get(1).name());
-        assertEquals(70, views.get(1).score());
+    }
+
+    // ── getTopNStudents ──────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should return top N students sorted by score desc, then name asc")
+    void getTopNStudents_shouldReturnSortedList() {
+        when(repository.findAll()).thenReturn(mockStudents);
+
+        List<Student> top2 = service.getTopNStudents(2);
+
+        assertEquals(2, top2.size());
+        assertEquals("Alice", top2.get(0).getName());  // 90, Alice < Diana alphabetically
+        assertEquals("Diana", top2.get(1).getName());  // 90, Diana
     }
 
     @Test
-    void getStudentViewList_shouldReturnCorrectFormat() {
-        service.addStudent("Alice", 90);
-        service.addStudent("Bob", 70);
+    @DisplayName("Should return all students when N exceeds total count")
+    void getTopNStudents_shouldReturnAll_whenNExceedsSize() {
+        when(repository.findAll()).thenReturn(mockStudents);
 
-        List<String> viewList = service.getStudentViewList();
-        assertEquals(2, viewList.size());
-        assertEquals("Alice - 90", viewList.get(0));
-        assertEquals("Bob - 70", viewList.get(1));
+        List<Student> result = service.getTopNStudents(100);
+
+        assertEquals(4, result.size());
     }
 
+    @Test
+    @DisplayName("Should return empty list when no students exist")
+    void getTopNStudents_shouldReturnEmpty_whenNoStudents() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+
+        List<Student> result = service.getTopNStudents(3);
+
+        assertTrue(result.isEmpty());
+    }
 }

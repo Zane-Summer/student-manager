@@ -98,5 +98,11 @@ public class StudentService {
                 .map(s -> new StudentView(s.getName(), s.getScore()))
                 .collect(Collectors.toList());
     }
+
+    // get top N students by score
+    public List<Student> getTopNStudents(int n){
+        List<Student> all = repository.findAll();
+        return all.stream().sorted(Comparator.comparingInt(Student::getScore).reversed().thenComparing(Student::getName)).limit(n).collect(Collectors.toList());
+    }
 }
 
