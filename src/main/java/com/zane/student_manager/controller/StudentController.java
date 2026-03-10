@@ -3,6 +3,7 @@ package com.zane.student_manager.controller;
 
 import com.zane.student_manager.entity.Student;
 import com.zane.student_manager.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,12 @@ public class StudentController {
     }
 
     @PostMapping
-    public Student add(@RequestBody Student student) {
+    public Student add(@RequestBody @Valid Student student) {
         return service.addStudent(student.getName(), student.getScore());
+    }
+
+    @DeleteMapping
+    public void removeBelowScore(@RequestParam int threshold) {
+        service.removeStudentBelowScore(threshold);
     }
 }
