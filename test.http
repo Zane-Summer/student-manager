@@ -1,0 +1,35 @@
+### Get All Students
+GET http://localhost:8080/students
+
+### Add a New Student
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+  "name": "Zane",
+  "score": 95
+}
+
+### Wrong Score
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+  "name": "ErrorUser",
+  "score": 150
+}
+
+### Cleanup Students below __(Score)
+DELETE http://localhost:8080/students?threshold=100
+
+### Wrong Name
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{ "name": "", "score": 80 }
+
+### Wrong Score (Negative)
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{ "name": "Zane", "score": -5 }
