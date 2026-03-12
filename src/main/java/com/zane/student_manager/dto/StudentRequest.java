@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class StudentRequest {
 
-    @NotBlank
+    @NotBlank(message = "Name cannot be blank")
     private String name;
 
     @Min(value = 0, message = "Score must be at least 0")
