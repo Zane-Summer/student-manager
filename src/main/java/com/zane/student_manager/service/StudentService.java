@@ -1,6 +1,7 @@
 package com.zane.student_manager.service;
 
 
+import com.zane.student_manager.dto.StudentResponse;
 import com.zane.student_manager.entity.Student;
 import com.zane.student_manager.exception.StudentNotFoundException;
 import com.zane.student_manager.repository.StudentRepository;
@@ -15,20 +16,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentService {
     private final StudentRepository repository;
-    public Student addStudent(String name, int score) {
+
+    private StudentResponse toResponse(Student s) {
+        return new StudentResponse(s.getId(), s.getName(), s.getScore());
+    }
+
+    @Transactional
+    public StudentResponse addStudent(String name, int score) {
         Student s = new Student();
         s.setName(name);
         s.setScore(score);
-        return repository.save(s);
+        return toResponse(repository.save(s));
     }
 
-    public Student findById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));
+    public StudentResponse findById(Long id) {
+        return toResponse(repository.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException(id)));
     }
 
-    public Page<Student> getAllStudents(Pageable pageable) {
-        return repository.findAll(pageable);
+    public Page<StudentResponse> getAllStudents(Pageable pageable) {
+        return repository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional
@@ -36,8 +43,11 @@ public class StudentService {
         repository.deleteByScoreLessThan(threshold);
     }
 
-    public List<Student> findByNameContainingIgnoreCase(String name) {
-        return repository.findByNameContainingIgnoreCase(name);
+    public List<StudentResponse> findByNameContainingIgnoreCase(String name) {
+        return repository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
@@ -47,13 +57,16 @@ public class StudentService {
         s.setScore(newScore);
     }
 
-    public List<Student> findStudentsByMaxScore(int maxScore) {
-        return repository.findByScoreLessThanEqual(maxScore);
+    public List<StudentResponse> findStudentsByMaxScore(int maxScore) {
+        return repository.findByScoreLessThanEqual(maxScore)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Page<Student> getTopNStudents(int n) {
-        return  repository.findAll(PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "score")));
+    public Page<StudentResponse> getTopNStudents(int n) {
+        return repository.findAll(
+                PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "score"))
+        ).map(this::toResponse);
     }
-
-
 }

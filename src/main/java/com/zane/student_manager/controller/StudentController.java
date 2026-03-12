@@ -1,7 +1,8 @@
 package com.zane.student_manager.controller;
 
 
-import com.zane.student_manager.entity.Student;
+import com.zane.student_manager.dto.StudentRequest;
+import com.zane.student_manager.dto.StudentResponse;
 import com.zane.student_manager.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,13 @@ public class StudentController {
     private final StudentService service;
 
     @GetMapping
-    public Page<Student> getAll(Pageable pageable) {
+    public Page<StudentResponse> getAll(Pageable pageable) {
         return service.getAllStudents(pageable);
     }
 
     @PostMapping
-    public Student add(@RequestBody @Valid Student student) {
-        return service.addStudent(student.getName(), student.getScore());
+    public StudentResponse add(@RequestBody @Valid StudentRequest request) {
+        return service.addStudent(request.getName(), request.getScore());
     }
 
     @DeleteMapping
@@ -33,12 +34,12 @@ public class StudentController {
     }
 
     @GetMapping("/search")
-    public List<Student> searchByName(@RequestParam String name) {
+    public List<StudentResponse> searchByName(@RequestParam String name) {
         return service.findByNameContainingIgnoreCase(name);
     }
 
     @GetMapping("{id}")
-    public Student getStudentById(@PathVariable Long id) {
+    public StudentResponse getStudentById(@PathVariable Long id) {
         return service.findById(id);
     }
 
@@ -48,12 +49,12 @@ public class StudentController {
     }
 
     @GetMapping("/score")
-    public List<Student> getStudentsByMaxScore(@RequestParam int maxScore) {
+    public List<StudentResponse> getStudentsByMaxScore(@RequestParam int maxScore) {
         return service.findStudentsByMaxScore(maxScore);
     }
 
     @GetMapping("/top")
-    public Page<Student> getTopNStudents(@RequestParam int n) {
+    public Page<StudentResponse> getTopNStudents(@RequestParam int n) {
         return service.getTopNStudents(n);
     }
 }
