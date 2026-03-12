@@ -33,3 +33,9 @@ POST http://localhost:8080/students
 Content-Type: application/json
 
 { "name": "Zane", "score": -5 }
+
+### Fuzzy Search by Name
+GET http://localhost:8080/students/search?name=z
+
+### Get top 10 students
+GET http://localhost:8080/students/top?n=10
