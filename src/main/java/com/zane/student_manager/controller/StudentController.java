@@ -57,4 +57,9 @@ public class StudentController {
     public Page<StudentResponse> getTopNStudents(@RequestParam int n) {
         return service.getTopNStudents(n);
     }
+
+    @GetMapping("/count")
+    public long countStudentsInScoreRange(@RequestParam int min, @RequestParam int max) {
+        return service.countStudentsInScoreRange(min, max);
+    }
 }

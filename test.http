@@ -41,4 +41,7 @@ GET http://localhost:8080/students/search?name=z
 GET http://localhost:8080/students/top?n=10
 
 ### get students by id
-GET http://localhost:8080/students/111
+GET http://localhost:8080/students/
+
+### count students between score range
+GET http://localhost:8080/students/count?min=80&max=100

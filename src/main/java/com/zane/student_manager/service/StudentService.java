@@ -69,4 +69,8 @@ public class StudentService {
                 PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "score"))
         ).map(this::toResponse);
     }
+
+    public Long countStudentsInScoreRange(int min, int max) {
+        return repository.countStudentsInScoreRange(min, max);
+    }
 }
