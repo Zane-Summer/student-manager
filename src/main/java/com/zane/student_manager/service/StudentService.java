@@ -52,6 +52,9 @@ public class StudentService {
 
     @Transactional
     public void updateStudentScore(Long id, int newScore) {
+        if (newScore < 0 || newScore > 100) {
+            throw new IllegalArgumentException("Score must be between 0 and 100");
+        }
         Student s = repository.findById(id)
                 .orElseThrow(() -> new StudentNotFoundException(id));
         s.setScore(newScore);
@@ -66,7 +69,7 @@ public class StudentService {
 
     public Page<StudentResponse> getTopNStudents(int n) {
         return repository.findAll(
-                PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "score"))
+                PageRequest.of(0, n, Sort.by(Sort.Direction.DESC, "score").and(Sort.by(Sort.Direction.ASC, "name")))
         ).map(this::toResponse);
     }
 
