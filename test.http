@@ -45,3 +45,8 @@ GET http://localhost:8080/students/
 
 ### count students between score range
 GET http://localhost:8080/students/count?min=80&max=100
+
+### get students by id (non-existing)
+GET http://localhost:8080/students/abc
+
+###
