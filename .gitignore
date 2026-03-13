@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+application-local.properties
 
 ### IntelliJ IDEA ###
 .idea/
